@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "dependencies": {
     "discord.js": "^12.5.1",
-    "mongodb": "^3.6.3"
+    "mongodb": "^3.6.4"
   },
   "scripts": {
     "start": "node index.js"
