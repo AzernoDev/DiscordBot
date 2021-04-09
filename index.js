@@ -30,38 +30,44 @@ client.on('message', async msg => {
     for(let i = 0; i < args.length; i++) args[i] = args[i].toLowerCase();
 
     const cmd = args.shift();
-
-
-
     if(client.commands.has(cmd)) {
         await (client.commands.get(cmd) instanceof Commands)
             .use(client.commands, Config, client, args);
     }
 });
 
-client.on("voiceStateUpdate", (oldState, newState) => {
+client.on("voiceStateUpdate", async (oldState, newState) => {
+
    if(newState.channel) {
+
        if(newState.channel.id === '701867387049476249' || newState.channel.id === '828608131634429953') {
-           newState.channel.guild.channels.create(`${newState.member.user.username}'s vocal [T]`, {
+
+           await newState.channel.guild.channels.create(`${newState.member.user.username}'s vocal [T]`, {
                type: "voice",
                parent: newState.channel.parent,
            }).then(channel => {
+
                if(!(channel instanceof Discord.VoiceChannel)) return null;
-
                newState.member.voice.setChannel(channel).then(member => {
-                   if(!(member instanceof Discord.GuildMember)) return null;
 
+                   if(!(member instanceof Discord.GuildMember)) return null;
                    Config.Log(`${channel.name} has been created and ${member.user.tag} has been moved successfully`);
+
                }).catch(err => Config.Error(err));
            }).catch(err => Config.Error(err));
        }
-   } else if(oldState.channel) {
-       if(oldState.channel.name.endsWith('[T]') && oldState.channel.members.size === 0)
-       {
-           oldState.channel.delete(`Empty`).then(channel => {
-               if(!(channel instanceof Discord.VoiceChannel)) return null;
 
-               Config.Log(`${channel.name} has been deleted, reason : Empty`)
+   }
+
+   if(oldState.channel) {
+
+       if(oldState.channel.name.endsWith('[T]') && oldState.channel.members.size === 0) {
+
+           await oldState.channel.delete(`Empty`).then(channel => {
+
+               if(!(channel instanceof Discord.VoiceChannel)) return null;
+               Config.Log(`${channel.name} has been deleted, reason : Empty`);
+
            })
        }
    }
@@ -92,29 +98,29 @@ client.login(Config.BotToken).then(() => {
     Config.Log = async _string => {
         console.log(_string)
 
-        await client.channels.fetch(Config.ChannelLogID).then(channel => {
+        await client.channels.fetch(Config.ChannelLogID).then(async channel => {
             if (!(channel instanceof Discord.TextChannel)) return null;
-            channel.send(`:pencil: ${_string}`);
+            await channel.send(`:pencil: ${_string}`);
         }).catch(err => console.error(err))
     };
 
     Config.Error = async _string => {
         console.error(_string)
 
-        await client.channels.fetch(Config.ChannelLogID).then(channel => {
+        await client.channels.fetch(Config.ChannelLogID).then(async channel => {
             if (!(channel instanceof Discord.TextChannel)) return null;
-            channel.send(`:warning: <@${Config.AuthorClientID}> ${_string}`);
+            await channel.send(`:warning: <@${Config.AuthorClientID}> ${_string}`);
         }).catch(err => console.error(err))
     };
 
 }).catch(err => console.error(err));
 
-process.on("SIGINT", () => {
-    Config.Log('Shutdown');
-    process.exit();
-});
+// process.on("SIGINT", () => {
+//     Config.Log('shutdown');
+//     process.send('shutdown');
+// });
 
 async function dateToString(_date)
 {
-    return `${_date.getUTCFullYear()}-${_date.getUTCMonth()+1}-${_date.getUTCDate()} T:${_date.getUTCHours()}:${_date.getUTCMinutes()}:${_date.getUTCSeconds()} UTC`
+    return `${_date.getUTCFullYear()}-${_date.getUTCMonth()+1}-${_date.getUTCDate()} ${_date.getUTCHours()}:${_date.getUTCMinutes()}:${_date.getUTCSeconds()} UTC`
 }
